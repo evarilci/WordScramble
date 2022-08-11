@@ -11,6 +11,9 @@ struct ContentView: View {
     @State private var usedWords = [String]()
     @State private var newWord = ""
     @State private var rootWord = ""
+    @State private var score = 0
+    @State private var totalScore = 0
+    
     @State private var alertTitle = ""
     @State private var alertMessage = ""
     @State private var showingAlert = false
@@ -31,8 +34,17 @@ struct ContentView: View {
                         }
                     }
                 }
+                Section("Points for this word") {
+                    Text("\(score)")
+                }
+                Section("Total points") {
+                    Text("\(totalScore)")
+                }
             }
             .navigationTitle(rootWord)
+            .toolbar {
+                Button("Shuffle", action: startGame)
+            }
             .onSubmit(addNewWord)
             .onAppear(perform: startGame)
             .alert(alertTitle, isPresented: $showingAlert) {
@@ -47,7 +59,7 @@ struct ContentView: View {
         let answer = newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         guard answer.count > 0 else {return}
         
-        // more method comes here
+        // checks will come here
         guard isOriginal(word: answer) else {
             wordAlert(title: "Word used already", message: "Think harder!")
             return
@@ -60,6 +72,7 @@ struct ContentView: View {
             wordAlert(title: "Hmm", message: "Seems like you made it up...")
             return
         }
+        score += answer.count
         
         withAnimation {
             usedWords.insert(answer, at: 0)
@@ -68,10 +81,12 @@ struct ContentView: View {
     }
     
     func startGame() {
+        totalScore = score + totalScore
         if let url = Bundle.main.url(forResource: "start", withExtension: "txt"){
             if let contents = try? String(contentsOf: url) {
                 let letter = contents.components(separatedBy: "\n")
                 rootWord = letter.randomElement() ?? "Milkyway"
+                score = 0
                 return
             }
         }
@@ -92,6 +107,9 @@ struct ContentView: View {
         return true
     }
     func isReal(word: String) -> Bool  {
+        
+        guard word.count >= 3 else {  return false }
+        
         let checker = UITextChecker()
         let range = NSRange(location: 0, length: word.utf16.count)
         let misspelword = checker.rangeOfMisspelledWord(in: word, range: range, startingAt: 0, wrap: false, language: "en")
