@@ -62,14 +62,17 @@ struct ContentView: View {
         // checks will come here
         guard isOriginal(word: answer) else {
             wordAlert(title: "Word used already", message: "Think harder!")
+            newWord = ""
             return
         }
         guard isPossible(word: answer) else {
             wordAlert(title: "Word is not possible!", message: "You can't spell that from '\(rootWord)'!")
+            newWord = ""
             return
         }
         guard isReal(word: answer) else {
             wordAlert(title: "Hmm", message: "Seems like you made it up...")
+            newWord = ""
             return
         }
         score += answer.count
@@ -87,6 +90,8 @@ struct ContentView: View {
                 let letter = contents.components(separatedBy: "\n")
                 rootWord = letter.randomElement() ?? "Milkyway"
                 score = 0
+                newWord = ""
+                usedWords.removeAll()
                 return
             }
         }
